@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Grade 2 Mixed Math Practice</title>
+  <style>
+    :root { font-size: 16px; }
+    body {
+      margin: 0;
+      font-family: 'Poppins', 'Comic Sans MS', sans-serif;
+      background: #f4fbff;
+      color: #15324a;
+      padding: 24px 16px 60px;
+      min-height: 100vh;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-bottom: 10px;
+      color: #1d5c9b;
+      text-decoration: none;
+      font-weight: bold;
+      background: rgba(255,255,255,0.85);
+      padding: 6px 14px;
+      border-radius: 999px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
+
+    h1 {
+      text-align: center;
+      background: rgba(255,255,255,0.9);
+      padding: 12px 18px;
+      border-radius: 14px;
+      margin: 0 auto;
+      max-width: 420px;
+      box-shadow: 0 10px 30px rgba(30,64,104,0.12);
+    }
+
+    .subnav {
+      margin: 14px auto 30px;
+      background: rgba(255,255,255,0.85);
+      padding: 10px 20px;
+      border-radius: 999px;
+      width: fit-content;
+      display: flex;
+      gap: 12px;
+      font-size: 0.95rem;
+      box-shadow: 0 12px 25px rgba(30,64,104,0.08);
+    }
+
+    .subnav a { color: #0f7abf; font-weight: 600; text-decoration: none; }
+    .subnav a:hover { text-decoration: underline; }
+
+    #worksheet {
+      max-width: 900px;
+      margin: 0 auto;
+      display: grid;
+      gap: 16px;
+    }
+
+    .problem {
+      background: #fff;
+      padding: 18px 20px 20px;
+      border-radius: 16px;
+      box-shadow: 0 15px 35px rgba(19,46,76,0.08);
+      border: 1px solid rgba(15,58,99,0.08);
+    }
+
+    .problem h3 {
+      margin: 0 0 8px;
+      font-size: 1rem;
+      color: #0f4b82;
+    }
+
+    .prompt {
+      font-size: 1.1rem;
+      margin-bottom: 12px;
+    }
+
+    input, select {
+      font-size: 1rem;
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: 2px solid #bad6ff;
+      width: min(220px, 100%);
+    }
+
+    input.correct { background: #c8f7d2; border-color: #2ecc71; }
+    input.incorrect { background: #ffd6d6; border-color: #ff7979; }
+
+    select.correct { background: #c8f7d2; border-color: #2ecc71; }
+    select.incorrect { background: #ffd6d6; border-color: #ff7979; }
+
+    .controls {
+      margin-top: 26px;
+      text-align: center;
+    }
+
+    button {
+      margin: 8px;
+      padding: 12px 22px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 999px;
+      background: linear-gradient(130deg,#1fb6ff,#7a5bff);
+      color: white;
+      cursor: pointer;
+      box-shadow: 0 15px 30px rgba(31,182,255,0.35);
+    }
+
+    button.secondary {
+      background: #ffffff;
+      color: #0f4b82;
+      border: 2px solid #d3e7ff;
+      box-shadow: none;
+    }
+
+    #score {
+      text-align: center;
+      margin-top: 14px;
+      font-size: 1.1rem;
+      color: #0d6b41;
+    }
+  </style>
+</head>
+<body>
+  <a class="back-link" href="./">&larr; Back to Grade 2 Math Sheet Hub</a>
+  <h1>Mixed Skills Practice</h1>
+  <div class="subnav">
+    <span>Want stacked problems?</span>
+    <a href="addition-subtraction.html">Go to Addition/Subtraction →</a>
+  </div>
+
+  <div id="worksheet"></div>
+
+  <div class="controls">
+    <button onclick="checkAnswers()">Check Answers</button>
+    <button class="secondary" onclick="generateProblems()">New Sheet</button>
+  </div>
+  <div id="score"></div>
+
+  <script>
+    const worksheet = document.getElementById('worksheet');
+    const problems = [];
+
+    const comparisonSymbols = ['<', '>', '='];
+
+    function reset() {
+      worksheet.innerHTML = '';
+      problems.length = 0;
+    }
+
+    function addProblem(title, promptHtml, type, answer) {
+      const idx = problems.length;
+      problems.push({ type, answer });
+
+      const wrapper = document.createElement('article');
+      wrapper.className = 'problem';
+      wrapper.innerHTML = `
+        <h3>${title}</h3>
+        <div class="prompt">${promptHtml}</div>
+        ${type === 'select'
+          ? `<select id="ans${idx}">
+              <option value="">Select</option>
+              <option value="<"><</option>
+              <option value=">">></option>
+              <option value="=">=</option>
+             </select>`
+          : `<input id="ans${idx}" type="text" inputmode="numeric" autocomplete="off" />`
+        }`;
+      worksheet.appendChild(wrapper);
+    }
+
+    function buildSkipCounting() {
+      const start = randInt(5, 40);
+      const step = [2, 5, 10][randInt(0,2)];
+      const sequence = Array.from({ length: 5 }, (_, i) => start + step * i);
+      const blankIndex = randInt(1, 3);
+      const answer = sequence[blankIndex];
+      sequence[blankIndex] = '___';
+      addProblem('Skip Counting', `Fill in the missing number:<br><strong>${sequence.join(', ')}</strong>`, 'input', String(answer));
+    }
+
+    function buildPlaceValue() {
+      const tens = randInt(2, 9);
+      const ones = randInt(0, 9);
+      const answer = tens * 10 + ones;
+      addProblem('Place Value Builder', `Make the number with <strong>${tens}</strong> tens and <strong>${ones}</strong> ones.`, 'input', String(answer));
+    }
+
+    function buildComparison() {
+      const a = randInt(12, 98);
+      const b = randInt(12, 98);
+      let answer = '=';
+      if (a > b) answer = '>';
+      else if (a < b) answer = '<';
+      addProblem('Compare Numbers', `Choose the symbol: <strong>${a} __ ${b}</strong>`, 'select', answer);
+    }
+
+    function buildWordProblem() {
+      const apples = randInt(4, 15);
+      const oranges = randInt(3, 12);
+      const take = randInt(1, apples - 1);
+      const type = Math.random() > 0.5 ? 'add' : 'sub';
+      let text, answer;
+      if (type === 'add') {
+        text = `Maya has ${apples} stickers and gets ${oranges} more. How many stickers now?`;
+        answer = apples + oranges;
+      } else {
+        text = `Leo picks ${apples} apples and gives ${take} away. How many are left?`;
+        answer = apples - take;
+      }
+      addProblem('Story Problem', text, 'input', String(answer));
+    }
+
+    function buildTimeToNearestFive() {
+      const hour = randInt(1, 12);
+      const minutes = [0,5,10,15,20,25,30,35,40,45,50,55][randInt(0,11)];
+      const displayMinutes = minutes.toString().padStart(2, '0');
+      const answer = `${hour}:${displayMinutes}`;
+      addProblem(
+        'Clock Reading',
+        `Write the time as HH:MM when the clock shows <strong>${hour}</strong> hours and <strong>${displayMinutes}</strong> minutes.`,
+        'input',
+        answer
+      );
+    }
+
+    function randInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function generateProblems() {
+      reset();
+      buildSkipCounting();
+      buildPlaceValue();
+      buildComparison();
+      buildWordProblem();
+      buildTimeToNearestFive();
+      document.getElementById('score').innerText = '';
+    }
+
+    function checkAnswers() {
+      let correct = 0;
+      problems.forEach((prob, idx) => {
+        const el = document.getElementById(`ans${idx}`);
+        if (!el) return;
+        const value = prob.type === 'select' ? el.value : el.value.trim();
+        el.classList.remove('correct','incorrect');
+        if (String(value) === prob.answer) {
+          correct++;
+          el.classList.add('correct');
+        } else {
+          el.classList.add('incorrect');
+        }
+      });
+      document.getElementById('score').innerText = `You got ${correct} out of ${problems.length} correct.`;
+    }
+
+    generateProblems();
+  </script>
+</body>
+</html>

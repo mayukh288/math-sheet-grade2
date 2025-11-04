@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Grade 2 Addition & Subtraction Practice</title>
+  <style>
+    body {
+      font-family: 'Comic Sans MS', cursive;
+      text-align: center;
+      margin: 0;
+      padding: 20px;
+      overflow-x: hidden;
+      transition: background-image 1s ease-in-out;
+      background-size: cover;
+      background-position: center;
+      color: #2c3e50;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-bottom: 10px;
+      color: #1d5c9b;
+      text-decoration: none;
+      font-weight: bold;
+      background: rgba(255,255,255,0.8);
+      padding: 6px 14px;
+      border-radius: 999px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
+
+    .subnav {
+      margin-top: 14px;
+      background: rgba(255,255,255,0.85);
+      display: inline-flex;
+      gap: 12px;
+      padding: 8px 16px;
+      border-radius: 999px;
+      font-size: 0.95em;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    .subnav a {
+      color: #0f7abf;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .subnav a:hover { text-decoration: underline; }
+
+    h1 {
+      color: #2c3e50;
+      margin: 8px 0 0;
+      background-color: rgba(255,255,255,0.8);
+      display: inline-block;
+      padding: 10px 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    #hero {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      background-color: rgba(255,255,255,0.6);
+      border-radius: 12px;
+      padding: 10px;
+    }
+
+    #worksheet {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      margin-top: 20px;
+    }
+
+    .problem {
+      font-size: 1.6em;
+      padding: 14px 18px;
+      border-radius: 14px;
+      background-color: rgba(234,242,255,0.95);
+      width: 260px;
+      position: relative;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+    }
+
+    .stack {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      align-items: center;
+      row-gap: 6px;
+      column-gap: 8px;
+    }
+
+    .op { text-align: right; padding-right: 6px; }
+    .num { text-align: right; letter-spacing: 1px; }
+    .bar { grid-column: 1 / -1; height: 2px; background: #2c3e50; margin: 4px 0; opacity: .25; }
+
+    input {
+      width: 120px;
+      text-align: right;
+      font-size: 1em;
+      padding: 6px 8px;
+      border-radius: 8px;
+      border: 2px solid #c7dafd;
+      outline: none;
+      transition: transform .15s ease, background-color .2s ease, border-color .2s ease;
+    }
+
+    input.correct { background-color: #b9f6ca; border-color: #27ae60; animation: pop .25s ease; }
+    input.incorrect { background-color: #ffdad6; border-color: #e57373; animation: shake .3s ease; }
+
+    .controls {
+      margin-top: 12px;
+      background-color: rgba(255,255,255,0.85);
+      display: inline-block;
+      padding: 10px 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    button {
+      margin: 8px;
+      padding: 10px 20px;
+      font-size: 1.1em;
+      border: none;
+      background-color: #3498db;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    }
+
+    button:hover { background-color: #2980b9; }
+
+    #score {
+      font-size: 1.3em;
+      color: #27ae60;
+      margin-top: 16px;
+      background-color: rgba(255,255,255,0.8);
+      display: inline-block;
+      padding: 8px 14px;
+      border-radius: 10px;
+    }
+
+    @keyframes pop { from { transform: scale(0.9); } to { transform: scale(1); } }
+    @keyframes shake {
+      10%, 90% { transform: translateX(-1px); }
+      20%, 80% { transform: translateX(2px); }
+      30%, 50%, 70% { transform: translateX(-3px); }
+      40%, 60% { transform: translateX(3px); }
+    }
+
+    .confetti {
+      position: fixed;
+      width: 8px;
+      height: 8px;
+      pointer-events: none;
+      border-radius: 2px;
+      opacity: 0.95;
+      animation: fall 700ms ease-out forwards;
+    }
+
+    @keyframes fall { to { transform: translate(var(--dx), var(--dy)) rotate(var(--rot)); opacity: 0; } }
+
+    #test-results {
+      font-size: .95rem;
+      color: #1f3b4d;
+      margin-top: 12px;
+      background-color: rgba(255,255,255,0.8);
+      display: inline-block;
+      padding: 10px 20px;
+      border-radius: 10px;
+    }
+
+    #test-results .pass { color: #2e7d32; }
+    #test-results .fail { color: #c62828; }
+  </style>
+</head>
+<body>
+  <a class="back-link" href="./">&larr; Back to Math Menu</a>
+
+  <div id="hero">
+    <h1>Grade 2 Addition &amp; Subtraction Practice</h1>
+  </div>
+
+  <div class="subnav">
+    <span>Need other skills?</span>
+    <a href="mixed-practice.html">Try the Mixed Skills Worksheet &rarr;</a>
+  </div>
+
+  <div id="worksheet"></div>
+
+  <div class="controls">
+    <button onclick="checkAnswers()">Check Answers</button>
+    <button onclick="regenerate()">New Sheet</button>
+  </div>
+
+  <div id="score"></div>
+  <div id="test-results" aria-live="polite"></div>
+
+  <script>
+    // Random cute background each load
+    const backgrounds = [
+      'https://cdn.pixabay.com/photo/2017/03/12/13/41/school-2130552_1280.jpg',
+      'https://cdn.pixabay.com/photo/2016/03/31/20/51/blackboard-1292913_1280.jpg',
+      'https://cdn.pixabay.com/photo/2017/08/01/09/04/child-2561605_1280.jpg',
+      'https://cdn.pixabay.com/photo/2016/11/29/13/12/animal-1868911_1280.jpg',
+      'https://cdn.pixabay.com/photo/2014/08/26/21/48/pencils-428883_1280.jpg'
+    ];
+    document.body.style.backgroundImage = `url('${backgrounds[Math.floor(Math.random() * backgrounds.length)]}')`;
+
+    const worksheet = document.getElementById('worksheet');
+    const problems = [];
+
+    function randomInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function generateProblems() {
+      worksheet.innerHTML = '';
+      problems.length = 0;
+      for (let i = 0; i < 10; i++) {
+        let a = randomInt(10, 99);
+        let b = randomInt(10, 99);
+        let op = Math.random() > 0.5 ? '+' : '-';
+        if (op === '-' && b > a) [a, b] = [b, a];
+        const answer = op === '+' ? a + b : a - b;
+        problems.push({ a, b, op, answer });
+
+        const div = document.createElement('div');
+        div.className = 'problem';
+        div.innerHTML = `
+          <div class='stack'>
+            <div class='op'>&nbsp;</div>
+            <div class='num'>${a}</div>
+            <div class='op'>${op}</div>
+            <div class='num'>${b}</div>
+            <div class='bar'></div>
+            <div class='op'>=</div>
+            <div class='num'><input type="number" id="ans${i}" /></div>
+          </div>`;
+        worksheet.appendChild(div);
+      }
+    }
+
+    function checkAnswers() {
+      let correct = 0;
+      for (let i = 0; i < problems.length; i++) {
+        const el = document.getElementById(`ans${i}`);
+        const userAns = parseInt(el.value);
+        el.classList.remove('correct','incorrect');
+        if (userAns === problems[i].answer) {
+          correct++;
+          el.classList.add('correct');
+          burstConfetti(el);
+          addCheckmark(el);
+        } else {
+          el.classList.add('incorrect');
+        }
+      }
+      document.getElementById('score').innerText = `You got ${correct} out of ${problems.length} correct!`;
+    }
+
+    function regenerate() {
+      generateProblems();
+      document.getElementById('score').innerText = '';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function burstConfetti(target) {
+      const rect = target.getBoundingClientRect();
+      const cx = rect.left + rect.width/2;
+      const cy = rect.top + rect.height/2;
+      const colors = ['#ef476f','#ffd166','#06d6a0','#118ab2','#8ecae6'];
+      for (let i = 0; i < 18; i++) {
+        const piece = document.createElement('div');
+        piece.className = 'confetti';
+        piece.style.left = cx + 'px';
+        piece.style.top = cy + 'px';
+        piece.style.background = colors[i % colors.length];
+        const dx = (Math.random()*160 - 80) + 'px';
+        const dy = (Math.random()*180 - 40) + 'px';
+        const rot = (Math.random()*720 - 360) + 'deg';
+        piece.style.setProperty('--dx', dx);
+        piece.style.setProperty('--dy', dy);
+        piece.style.setProperty('--rot', rot);
+        document.body.appendChild(piece);
+        setTimeout(() => piece.remove(), 750);
+      }
+    }
+
+    function addCheckmark(target) {
+      const span = document.createElement('span');
+      span.textContent = '✅';
+      span.style.position = 'absolute';
+      const pr = target.getBoundingClientRect();
+      span.style.left = (pr.left + pr.width + 10) + 'px';
+      span.style.top = (pr.top - 2) + 'px';
+      span.style.fontSize = '24px';
+      span.style.animation = 'pop .3s ease';
+      span.style.pointerEvents = 'none';
+      document.body.appendChild(span);
+      setTimeout(()=> span.remove(), 900);
+    }
+
+    generateProblems();
+  </script>
+</body>
+</html>
