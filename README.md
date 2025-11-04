@@ -2,8 +2,8 @@
 
 A lightweight site with a landing page plus two printable/interactive worksheets tailored to Grade 2 skills:
 
-- `addition-subtraction.html` – stacked two-digit addition & subtraction with instant feedback, confetti, and regeneration button.
-- `mixed-practice.html` – skip counting, place value, comparisons, word problems, and time reading in one quick set.
+- `addition-subtraction.html` – print-friendly two-column layout of stacked +/- problems with instant feedback, confetti, and regeneration button.
+- `mixed-practice.html` – skip counting, place value, comparisons, word problems, and time reading, each with a read-aloud button for accessibility.
 
 Each worksheet randomizes on load and can be used directly in the browser or printed to paper.
 
