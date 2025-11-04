@@ -238,18 +238,82 @@
       addProblem('Story Problem', text, 'input', String(answer), text);
     }
 
-    function buildTimeToNearestFive() {
+    const clockCanvas = document.createElement('canvas');
+    const clockSize = 160;
+    clockCanvas.width = clockSize;
+    clockCanvas.height = clockSize;
+    const clockCtx = clockCanvas.getContext('2d');
+
+    function makeClockImage(hour, minutes) {
+      const ctx = clockCtx;
+      ctx.clearRect(0, 0, clockSize, clockSize);
+      const R = clockSize / 2;
+      ctx.save();
+      ctx.translate(R, R);
+
+      // face
+      ctx.fillStyle = '#ffffff';
+      ctx.strokeStyle = '#0f4b82';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.arc(0, 0, R - 4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      // hour marks
+      ctx.lineWidth = 2;
+      for (let i = 0; i < 12; i++) {
+        ctx.save();
+        ctx.rotate((Math.PI / 6) * i);
+        ctx.beginPath();
+        ctx.moveTo(0, -(R - 8));
+        ctx.lineTo(0, -(R - 18));
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      const hourAngle = ((hour % 12) + minutes / 60) * (Math.PI / 6);
+      const minuteAngle = minutes * (Math.PI / 30);
+
+      // hour hand
+      ctx.strokeStyle = '#183a63';
+      ctx.lineWidth = 6;
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(Math.sin(hourAngle) * (R * 0.5), -Math.cos(hourAngle) * (R * 0.5));
+      ctx.stroke();
+
+      // minute hand
+      ctx.strokeStyle = '#3498db';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(Math.sin(minuteAngle) * (R * 0.75), -Math.cos(minuteAngle) * (R * 0.75));
+      ctx.stroke();
+
+      // center
+      ctx.fillStyle = '#0f4b82';
+      ctx.beginPath();
+      ctx.arc(0, 0, 4, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
+      return clockCanvas.toDataURL('image/png');
+    }
+
+    function buildClockWithImage() {
       const hour = randInt(1, 12);
       const minutes = [0,5,10,15,20,25,30,35,40,45,50,55][randInt(0,11)];
       const displayMinutes = minutes.toString().padStart(2, '0');
       const answer = `${hour}:${displayMinutes}`;
-      const prompt = `Write the time as hours and minutes when the clock shows ${hour} hours and ${displayMinutes} minutes.`;
+      const src = makeClockImage(hour, minutes);
+      const prompt = `Look at the clock and write the time in HH:MM.`;
       addProblem(
         'Clock Reading',
-        `Write the time as HH:MM when the clock shows <strong>${hour}</strong> hours and <strong>${displayMinutes}</strong> minutes.`,
+        `<img src="${src}" alt="Analog clock showing ${hour}:${displayMinutes}" style="width:160px;height:160px;display:block;margin-bottom:10px;"/>Write the time you see (HH:MM).`,
         'input',
         answer,
-        prompt
+        `Look at the clock and write ${hour} ${displayMinutes}`
       );
     }
 
@@ -263,7 +327,7 @@
       buildPlaceValue();
       buildComparison();
       buildWordProblem();
-      buildTimeToNearestFive();
+      buildClockWithImage();
       document.getElementById('score').innerText = '';
     }
 
