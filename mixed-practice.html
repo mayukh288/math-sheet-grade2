@@ -307,13 +307,13 @@
       const displayMinutes = minutes.toString().padStart(2, '0');
       const answer = `${hour}:${displayMinutes}`;
       const src = makeClockImage(hour, minutes);
-      const prompt = `Look at the clock and write the time in HH:MM.`;
+      const prompt = `Look at the clock and write the time you see in hh:mm format.`;
       addProblem(
         'Clock Reading',
-        `<img src="${src}" alt="Analog clock showing ${hour}:${displayMinutes}" style="width:160px;height:160px;display:block;margin-bottom:10px;"/>Write the time you see (HH:MM).`,
+        `<img src="${src}" alt="Analog clock showing ${hour}:${displayMinutes}" style="width:160px;height:160px;display:block;margin-bottom:10px;"/>Look at the clock and write the time you see in hh:mm format.`,
         'input',
         answer,
-        `Look at the clock and write ${hour} ${displayMinutes}`
+        prompt
       );
     }
 
