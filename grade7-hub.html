@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Grade 7 Math Sheets</title>
+  <script src="google-auth-config.js"></script>
   <style>
     :root {
       color-scheme: light;
@@ -209,6 +210,11 @@
     <button class="reset-btn" onclick="resetStats()">Reset Stats</button>
   </div>
 
+  <div class="stats-box" id="sheetsStatsContainer" style="display: none; background: linear-gradient(135deg, #e8f0ff 0%, #f0f8ff 100%); border: 2px solid #3aa0ff;">
+    <h3>📊 Class Statistics (from Google Sheets)</h3>
+    <div id="sheetsStatsContent"></div>
+  </div>
+
   <section class="grid">
     <article class="card">
       <h2>Exponents Practice</h2>
@@ -246,7 +252,55 @@
       const stats = JSON.parse(localStorage.getItem('mathStats')) || { grade2: {total: 0, correct: 0}, grade7: {total: 0, correct: 0} };
       document.getElementById('totalAttempted').textContent = stats.grade7.total || 0;
       document.getElementById('totalCorrect').textContent = stats.grade7.correct || 0;
+      loadGoogleSheetStats();
     }
+
+    async function loadGoogleSheetStats() {
+      if (!isAdminLoggedIn()) {
+        document.getElementById('sheetsStatsContainer').style.display = 'none';
+        return;
+      }
+
+      try {
+        const data = await fetchScoresFromSheets('grade7');
+        if (!data || data.stats.totalStudents === 0) {
+          document.getElementById('sheetsStatsContainer').style.display = 'none';
+          return;
+        }
+
+        const { stats } = data;
+        const html = `
+          <div class="stats-row">
+            <span>Total Students:</span>
+            <strong>${stats.totalStudents}</strong>
+          </div>
+          <div class="stats-row">
+            <span>Total Attempts:</span>
+            <strong>${stats.totalAttempts}</strong>
+          </div>
+          <div class="stats-row">
+            <span>Total Correct:</span>
+            <strong>${stats.totalCorrect}</strong>
+          </div>
+          <div class="stats-row">
+            <span>Class Average:</span>
+            <strong>${stats.averagePercentage}%</strong>
+          </div>
+        `;
+        document.getElementById('sheetsStatsContent').innerHTML = html;
+        document.getElementById('sheetsStatsContainer').style.display = 'block';
+      } catch (error) {
+        console.error('Error loading Google Sheets stats:', error);
+        document.getElementById('sheetsStatsContainer').style.display = 'none';
+      }
+    }
+
+    // Refresh stats periodically when admin is logged in
+    setInterval(() => {
+      if (isAdminLoggedIn && isAdminLoggedIn()) {
+        loadGoogleSheetStats();
+      }
+    }, 5000);
 
     function resetStats() {
       if (confirm('Are you sure you want to reset all Grade 7 stats?')) {

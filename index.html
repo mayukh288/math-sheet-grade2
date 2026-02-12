@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Math Sheet Hub</title>
+  <script src="google-auth-config.js"></script>
   <style>
     :root {
       color-scheme: light;
@@ -128,9 +129,55 @@
     footer a {
       color: inherit;
     }
+
+    .admin-section {
+      position: absolute;
+      top: 24px;
+      right: 24px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      background: rgba(255,255,255,0.9);
+      padding: 12px 16px;
+      border-radius: 999px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    #adminDisplay {
+      font-size: 0.9rem;
+      color: #345975;
+      font-weight: 600;
+    }
+
+    #adminLoginBtn, #adminLogoutBtn {
+      background: #4285f4;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.9rem;
+      box-shadow: 0 4px 12px rgba(66,133,244,0.3);
+      transition: transform 0.2s;
+    }
+
+    #adminLogoutBtn {
+      background: #ff6b6b;
+      box-shadow: 0 4px 12px rgba(255,107,107,0.3);
+    }
+
+    #adminLoginBtn:hover, #adminLogoutBtn:hover {
+      transform: translateY(-2px);
+    }
   </style>
 </head>
 <body>
+  <div class="admin-section">
+    <span id="adminDisplay"></span>
+    <button id="adminLoginBtn" onclick="adminSignIn()" style="display: none;">Login (Admin)</button>
+    <button id="adminLogoutBtn" onclick="adminSignOut()" style="display: none;">Logout</button>
+  </div>
   <header>
     <h1>Math Sheet Hub</h1>
     <p class="tagline">Choose your grade level to access practice worksheets. Pick a worksheet, print it, or practice right on the screen.</p>
@@ -167,7 +214,27 @@
   <footer>
     Built with ❤️ for quick at-home math warmups.
     <br><br>
-    <a href="admin.html" style="opacity: 0.6; font-size: 0.8rem;">Admin Dashboard</a>
+    <a href="admin.html" style="opacity: 0.6; font-size: 0.8rem;">📊 Detailed Admin Dashboard</a>
   </footer>
+
+  <script>
+    // Override the updateAdminUI to ensure buttons are visible on main page
+    const originalUpdateAdminUI = window.updateAdminUI;
+    window.updateAdminUI = function(isSignedIn) {
+      const loginBtn = document.getElementById('adminLoginBtn');
+      const logoutBtn = document.getElementById('adminLogoutBtn');
+      const adminDisplay = document.getElementById('adminDisplay');
+
+      if (isSignedIn) {
+        if (loginBtn) loginBtn.style.display = 'none';
+        if (logoutBtn) logoutBtn.style.display = 'inline-block';
+        if (adminDisplay) adminDisplay.textContent = `Logged in as: ${adminEmail}`;
+      } else {
+        if (loginBtn) loginBtn.style.display = 'inline-block';
+        if (logoutBtn) logoutBtn.style.display = 'none';
+        if (adminDisplay) adminDisplay.textContent = '';
+      }
+    };
+  </script>
 </body>
 </html>

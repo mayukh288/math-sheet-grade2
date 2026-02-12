@@ -79,8 +79,74 @@ function updateAdminUI(isSignedIn) {
   }
 }
 
+// Get current auth status
 function isAdminLoggedIn() {
   return googleAuth && googleAuth.isSignedIn.get();
+}
+
+// Fetch scores from Google Sheets for a specific grade
+async function fetchScoresFromSheets(grade) {
+  if (!isAdminLoggedIn()) {
+    console.warn('Not logged in. Cannot fetch from Sheets.');
+    return null;
+  }
+
+  try {
+    const sheetName = grade === 'grade2' ? 'Grade2' : 'Grade7';
+    const response = await gapi.client.sheets.spreadsheets.values.get({
+      spreadsheetId: GOOGLE_SHEETS_ID,
+      range: `${sheetName}!A:F`
+    });
+
+    const rows = response.result.values || [];
+    if (rows.length <= 1) {
+      return { students: [], stats: {} }; // Header only or empty
+    }
+
+    // Parse the data (skip header row)
+    const students = {};
+    for (let i = 1; i < rows.length; i++) {
+      const [name, timestamp, sheetType, correct, total, percentage] = rows[i] || [];
+      if (!name) continue;
+
+      if (!students[name]) {
+        students[name] = [];
+      }
+
+      students[name].push({
+        sheetType,
+        correct: parseInt(correct) || 0,
+        total: parseInt(total) || 0,
+        percentage,
+        timestamp
+      });
+    }
+
+    // Calculate stats
+    let totalStudents = Object.keys(students).length;
+    let totalAttempts = 0;
+    let totalCorrect = 0;
+
+    for (const name in students) {
+      totalAttempts += students[name].length;
+      students[name].forEach(score => {
+        totalCorrect += score.correct;
+      });
+    }
+
+    return {
+      students,
+      stats: {
+        totalStudents,
+        totalAttempts,
+        totalCorrect,
+        averagePercentage: totalAttempts > 0 ? Math.round((totalCorrect / totalAttempts) * 100) : 0
+      }
+    };
+  } catch (error) {
+    console.error('Error fetching from Google Sheets:', error);
+    return null;
+  }
 }
 
 // Sync all collected student scores to Google Sheets
