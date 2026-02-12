@@ -38,6 +38,15 @@
       box-shadow: 0 2px 6px rgba(0,0,0,0.08);
     }
 
+    .back-nav {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .back-link:hover { background: rgba(255,255,255,0.95); }
+
     .subnav {
       margin: 16px auto 0;
       background: rgba(255,255,255,0.9);
@@ -235,7 +244,10 @@
 </head>
 <body>
   <div class="page">
-    <a class="back-link" href="./">&larr; Back to Math Menu</a>
+    <div class="back-nav">
+      <a class="back-link" href="grade2-hub.html">&larr; Back to Grade 2</a>
+      <a class="back-link" href="./">&larr; Back to Home</a>
+    </div>
 
     <div id="hero">
       <h1>Grade 2 Multiplication Practice</h1>
