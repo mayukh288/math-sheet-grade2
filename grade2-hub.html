@@ -3,7 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Grade 2 Math Sheets</title>  <script src=\"google-auth-config.js\"></script>  <style>
+  <title>Grade 2 Math Sheets</title>
+  <script async defer src="https://apis.google.com/js/platform.js"></script>
+  <script src="google-auth-config.js"></script>
+  <style>
     :root {
       color-scheme: light;
     }
@@ -321,6 +324,13 @@
     }
 
     loadStats();
+
+    // Initialize Google API when page loads
+    window.addEventListener('load', () => {
+      if (typeof initGoogleAPI === 'function') {
+        initGoogleAPI();
+      }
+    });
   </script>
 </body>
 </html>

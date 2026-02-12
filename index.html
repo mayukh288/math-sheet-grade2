@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Math Sheet Hub</title>
+  <script async defer src="https://apis.google.com/js/platform.js"></script>
   <script src="google-auth-config.js"></script>
   <style>
     :root {
@@ -235,6 +236,11 @@
         if (adminDisplay) adminDisplay.textContent = '';
       }
     };
+
+    // Initialize Google API when page loads
+    window.addEventListener('load', () => {
+      initGoogleAPI();
+    });
   </script>
 </body>
 </html>
