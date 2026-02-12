@@ -1,7 +1,28 @@
-# Google Sheets Integration Setup Guide
+# Google Sheets Integration Setup Guide (Admin-Only)
 
 ## Overview
-This guide will help you set up Google authentication and automatic score saving to Google Sheets.
+This guide helps you set up the **admin-only** authentication system:
+- **Students**: No login needed - just enter their name and take tests
+- **Admin**: Logs in with Google to view all scores and sync to Google Sheets
+- **Scores**: Stored locally until admin syncs them to Google Sheets
+
+## Architecture
+
+```
+┌─ Students (no login) ─┐
+│  1. Enter name       │
+│  2. Take test        │──→ Stored locally in browser
+│  3. Submit answers   │
+└──────────────────────┘
+
+                              ↓
+
+┌─ Admin Dashboard ────────┐
+│  1. Login with Google   │
+│  2. View all scores     │──→ Right from localStorage
+│  3. Sync to Sheets      │
+└─────────────────────────┘
+```
 
 ## Step 1: Create a Google Cloud Project
 
@@ -16,7 +37,7 @@ This guide will help you set up Google authentication and automatic score saving
 2. Search for "Google Sheets API"
 3. Click it and press "Enable"
 
-## Step 3: Create OAuth 2.0 Credentials
+## Step 3: Create OAuth 2.0 Credentials (for Admin)
 
 1. Go to "APIs & Services" > "Credentials"
 2. Click "Create Credentials" > "OAuth client ID"
@@ -45,9 +66,9 @@ This guide will help you set up Google authentication and automatic score saving
    - **Sheet 1**: Rename to "Grade2"
    - **Sheet 2**: Rename to "Grade7"
 4. In each sheet, add headers in Row 1:
-   - Column A: `Email`
+   - Column A: `Student Name`
    - Column B: `Timestamp`
-   - Column C: `Grade`
+   - Column C: `Sheet Type`
    - Column D: `Correct`
    - Column E: `Total`
    - Column F: `Percentage`
@@ -66,7 +87,7 @@ This guide will help you set up Google authentication and automatic score saving
 
 ## Step 6: Test Locally
 
-To test locally, you can use Python's built-in server:
+To test locally, use Python's built-in server:
 
 ```bash
 cd math-sheet-grade2
@@ -75,37 +96,95 @@ python3 -m http.server 8000
 
 Then navigate to `http://localhost:8000`
 
+### Test Flow:
+1. Go to home page
+2. Click on a grade (2 or 7)
+3. Follow a worksheet link
+4. **Enter your name** in the "Your Name" field
+5. Take the test
+6. Click "Check Answers"
+7. Go to `http://localhost:8000/admin.html`
+8. Click "Login with Google" button
+9. Your scores should appear in the dashboard
+10. Click "Sync All Scores to Google Sheets"
+
 ## Step 7: Deploy to GitHub Pages
 
-Once tested:
+Once tested locally:
+
 ```bash
 git add -A
-git commit -m "Add Google Sheets integration"
+git commit -m "Configure Google Sheets integration"
 git push origin main
 ```
 
 Your app will be available at: `https://yourgithubusername.github.io/math-sheet-grade2`
 
+## Usage
+
+### For Students:
+1. Visit the app
+2. Choose Grade 2 or Grade 7
+3. Pick a worksheet
+4. **Enter your name** (required for tracking)
+5. Take the test
+6. Click "Check Answers"
+7. Scores are saved automatically
+
+### For Admin:
+1. Visit `/admin.html` page
+2. Click "Login with Google"
+3. View all student scores by grade
+4. See stats: Total students, total attempts, total correct, overall percentage
+5. Click "📤 Sync All Scores to Google Sheets" to save to your Sheet
+6. Optionally export as CSV for other uses
+7. Click "Logout" when done
+
 ## Features
 
-- **Automatic Login**: Students click "Login with Google" button
-- **Score Logging**: Each time "Check Answers" is clicked, scores are saved to Google Sheets
-- **Anonymous Fallback**: If not logged in, scores still save locally to localStorage
-- **Teacher View**: View all student scores in Google Sheets dashboard
+✅ **No student login required** - just enter name
+✅ **Local score storage** - works offline
+✅ **Admin-only authentication** - secure
+✅ **Real-time dashboard** - see scores as students take tests
+✅ **One-click sync** - push all data to Google Sheets
+✅ **CSV export** - backup or analyze in Excel/Sheets
+✅ **Stats tracking** - class averages and percentages
 
 ## Troubleshooting
 
 ### "Unauthorized origin" error
-- Make sure you added your GitHub Pages URL to the Authorized redirect URIs in Google Cloud Console
+- Make sure you added your GitHub Pages URL to Authorized redirect URIs
 - Format: `https://yourgithubusername.github.io/math-sheet-grade2`
 
-### Scores not saving to Sheets
-- Check browser console (F12) for errors
-- Ensure you're logged in (green "Logged in" indicator visible)
-- Verify the Sheet ID is correct
-- Make sure Google Sheets API is enabled in Google Cloud Console
+### Scores not appearing in admin dashboard
+- Make sure student names were entered before submitting answers
+- Check browser's "Local Storage" (F12 → Application → Local Storage → math-sheet-grade2 origin)
+- Try in an incognito window
+
+### Sync to Google Sheets not working
+- Check you're logged in as admin (green indicator visible)
+- Verify Sheet ID is correct in `google-auth-config.js`
+- Check Google Sheets API is enabled in Google Cloud Console
+- Try syncing in an incognito window (avoids cache issues)
 
 ### Still seeing errors?
-- Try in an incognito window
-- Clear browser cache
-- Check that `google-auth-config.js` is being loaded (check Network tab in DevTools)
+- Open browser DevTools (F12)
+- Check Console tab for error messages
+- Verify `google-auth-config.js` is loading (Network tab)
+- Check that credentials are configured correctly
+
+## Security Notes
+
+- **Student data**: Stored only in browser's local storage (on each device)
+- **Admin credentials**: Only used when admin logs in - never exposed to students
+- **Google Sheets**: Only accessible by admin's Google account
+- **No passwords stored** - uses OAuth 2.0 (industry standard)
+
+## Support
+
+For issues or questions:
+1. Check browser console (F12)
+2. Verify all configuration steps were followed
+3. Try clearing cache and reloading
+4. Check that Google Sheets API is enabled in Cloud Console
+
