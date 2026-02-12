@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard - Math Sheet Grader</title>
+  <script src="google-auth-config.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: 'Poppins', 'Comic Sans MS', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(135deg, #f8fbff 0%, #f1f5ff 40%, #ffeef7 100%);
+      padding: 24px 20px;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      background: rgba(255,255,255,0.95);
+      border-radius: 20px;
+      padding: 32px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 32px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    h1 {
+      margin: 0;
+      color: #10365f;
+      font-size: 2rem;
+    }
+
+    .auth-section {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    #adminDisplay {
+      font-weight: 600;
+      color: #345975;
+    }
+
+    button {
+      background: #4285f4;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-weight: 600;
+      box-shadow: 0 4px 12px rgba(66,133,244,0.3);
+      transition: transform 0.2s;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+    }
+
+    #adminLogoutBtn {
+      background: #ff6b6b;
+      box-shadow: 0 4px 12px rgba(255,107,107,0.3);
+    }
+
+    .not-logged-in {
+      text-align: center;
+      padding: 60px 20px;
+      color: #345975;
+    }
+
+    .not-logged-in h2 {
+      margin-top: 0;
+      color: #0f4b82;
+    }
+
+    .dashboard {
+      display: none;
+    }
+
+    .dashboard.active {
+      display: block;
+    }
+
+    .section {
+      margin-bottom: 32px;
+    }
+
+    .section h2 {
+      color: #0f4b82;
+      font-size: 1.3rem;
+      margin-top: 0;
+      border-bottom: 3px solid #e8f0ff;
+      padding-bottom: 12px;
+    }
+
+    .stats-summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: linear-gradient(135deg, #e8f0ff 0%, #f0f8ff 100%);
+      padding: 18px;
+      border-radius: 12px;
+      text-align: center;
+      border: 2px solid #bad6ff;
+    }
+
+    .stat-card h3 {
+      margin: 0 0 8px;
+      color: #0f4b82;
+      font-size: 0.9rem;
+    }
+
+    .stat-card .number {
+      font-size: 2rem;
+      font-weight: bold;
+      color: #3aa0ff;
+    }
+
+    .scores-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    .scores-table th {
+      background: #e8f0ff;
+      color: #0f4b82;
+      padding: 12px;
+      text-align: left;
+      font-weight: 600;
+      border-bottom: 2px solid #bad6ff;
+    }
+
+    .scores-table td {
+      padding: 12px;
+      border-bottom: 1px solid #e8f0ff;
+    }
+
+    .scores-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .scores-table tr:hover {
+      background: #f8fbff;
+    }
+
+    .sync-button {
+      background: linear-gradient(120deg, #06d6a0, #0fb77d);
+      padding: 12px 24px;
+      font-size: 0.95rem;
+      box-shadow: 0 6px 16px rgba(6,214,160,0.3);
+      width: 100%;
+      margin-top: 12px;
+    }
+
+    .sync-button:hover {
+      transform: translateY(-3px);
+    }
+
+    .clear-button {
+      background: #ff6b6b;
+      padding: 10px 16px;
+      font-size: 0.85rem;
+      margin-top: 12px;
+    }
+
+    .export-button {
+      background: #ffd166;
+      color: #333;
+      padding: 10px 16px;
+      font-size: 0.85rem;
+      margin-top: 12px;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+
+    .action-buttons button {
+      flex: 1;
+      min-width: 150px;
+    }
+
+    .grade-section {
+      margin-bottom: 40px;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: #607086;
+      font-style: italic;
+    }
+
+    .success-message {
+      background: #d4edda;
+      color: #155724;
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      border-left: 4px solid #10b981;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 20px;
+      }
+
+      h1 {
+        font-size: 1.5rem;
+      }
+
+      .header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>👨‍🏫 Admin Dashboard</h1>
+      <div class="auth-section">
+        <span id="adminDisplay"></span>
+        <button id="adminLoginBtn" onclick="adminSignIn()">Login with Google</button>
+        <button id="adminLogoutBtn" onclick="adminSignOut()" style="display: none;">Logout</button>
+      </div>
+    </div>
+
+    <div class="not-logged-in" id="notLoggedIn">
+      <h2>🔒 Admin Access Required</h2>
+      <p>Please login with your Google account to access student scores and sync to Google Sheets.</p>
+      <button onclick="adminSignIn()" style="font-size: 1rem; padding: 12px 24px;">Login as Administrator</button>
+    </div>
+
+    <div class="dashboard" id="dashboard">
+      <div id="successMessage"></div>
+
+      <!-- Grade 2 Section -->
+      <div class="grade-section">
+        <h2>📊 Grade 2 - Scores</h2>
+        <div class="stats-summary" id="grade2Stats"></div>
+        <div id="grade2Scores"></div>
+      </div>
+
+      <!-- Grade 7 Section -->
+      <div class="grade-section">
+        <h2>📊 Grade 7 - Scores</h2>
+        <div class="stats-summary" id="grade7Stats"></div>
+        <div id="grade7Scores"></div>
+      </div>
+
+      <!-- Actions -->
+      <div class="section">
+        <h2>⚙️ Actions</h2>
+        <button class="sync-button" onclick="syncAndExport()">📤 Sync All Scores to Google Sheets</button>
+        <div class="action-buttons">
+          <button class="export-button" onclick="exportToCSV()">📥 Export as CSV</button>
+          <button class="clear-button" onclick="clearAllData()">🗑️ Clear All Data</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let allScores = {};
+
+    function loadScores() {
+      allScores = JSON.parse(localStorage.getItem('allStudentScores')) || { grade2: {}, grade7: {} };
+      updateDashboard();
+    }
+
+    function updateDashboard() {
+      if (!isAdminLoggedIn()) {
+        document.getElementById('notLoggedIn').style.display = 'block';
+        document.getElementById('dashboard').classList.remove('active');
+        return;
+      }
+
+      document.getElementById('notLoggedIn').style.display = 'none';
+      document.getElementById('dashboard').classList.add('active');
+
+      displayGradeScores('grade2', 'Grade 2');
+      displayGradeScores('grade7', 'Grade 7');
+    }
+
+    function displayGradeScores(gradeKey, gradeLabel) {
+      const containerId = gradeKey === 'grade2' ? 'grade2Scores' : 'grade7Scores';
+      const statsId = gradeKey === 'grade2' ? 'grade2Stats' : 'grade7Stats';
+      const studentData = allScores[gradeKey] || {};
+
+      let totalStudents = 0;
+      let totalAttempts = 0;
+      let totalCorrect = 0;
+      let htmlContent = '';
+      let statsContent = '';
+
+      if (Object.keys(studentData).length === 0) {
+        htmlContent = '<div class="empty-state">No scores recorded yet</div>';
+      } else {
+        htmlContent = '<table class="scores-table"><thead><tr><th>Student Name</th><th>Sheet Type</th><th>Score</th><th>Percentage</th><th>Timestamp</th></tr></thead><tbody>';
+
+        for (const studentName in studentData) {
+          const scores = studentData[studentName];
+          totalStudents++;
+
+          for (const score of scores) {
+            totalAttempts++;
+            totalCorrect += parseInt(score.correct);
+            htmlContent += `
+              <tr>
+                <td><strong>${studentName}</strong></td>
+                <td>${score.sheetType}</td>
+                <td>${score.correct}/${score.total}</td>
+                <td><strong>${score.percentage}</strong></td>
+                <td>${new Date(score.timestamp).toLocaleString()}</td>
+              </tr>
+            `;
+          }
+        }
+
+        htmlContent += '</tbody></table>';
+      }
+
+      statsContent = `
+        <div class="stat-card">
+          <h3>Total Students</h3>
+          <div class="number">${totalStudents}</div>
+        </div>
+        <div class="stat-card">
+          <h3>Total Attempts</h3>
+          <div class="number">${totalAttempts}</div>
+        </div>
+        <div class="stat-card">
+          <h3>Total Correct</h3>
+          <div class="number">${totalCorrect}</div>
+        </div>
+        <div class="stat-card">
+          <h3>Overall %</h3>
+          <div class="number">${totalAttempts > 0 ? Math.round((totalCorrect / totalAttempts) * 100) : 0}%</div>
+        </div>
+      `;
+
+      document.getElementById(statsId).innerHTML = statsContent;
+      document.getElementById(containerId).innerHTML = htmlContent;
+    }
+
+    async function syncAndExport() {
+      if (!isAdminLoggedIn()) {
+        alert('Please login first');
+        return;
+      }
+
+      const success = await syncScoresToSheets();
+      if (success) {
+        document.getElementById('successMessage').innerHTML = '<div class="success-message">✅ Successfully synced to Google Sheets!</div>';
+        setTimeout(() => {
+          document.getElementById('successMessage').innerHTML = '';
+        }, 5000);
+      }
+    }
+
+    function exportToCSV() {
+      let csv = 'Student Name,Grade,Sheet Type,Correct,Total,Percentage,Timestamp\n';
+
+      for (const grade in allScores) {
+        const gradeNum = grade === 'grade2' ? '2' : '7';
+        const studentData = allScores[grade];
+
+        for (const studentName in studentData) {
+          const scores = studentData[studentName];
+          for (const score of scores) {
+            csv += `"${studentName}",${gradeNum},"${score.sheetType}",${score.correct},${score.total},"${score.percentage}","${score.timestamp}"\n`;
+          }
+        }
+      }
+
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `math-scores-${new Date().toISOString().split('T')[0]}.csv`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+    }
+
+    function clearAllData() {
+      if (confirm('⚠️ Are you sure? This will delete ALL student scores from local storage. This cannot be undone!')) {
+        localStorage.removeItem('allStudentScores');
+        allScores = { grade2: {}, grade7: {} };
+        updateDashboard();
+        alert('✅ All data cleared');
+      }
+    }
+
+    // Listen for login changes
+    window.addEventListener('load', () => {
+      loadScores();
+      setInterval(loadScores, 2000); // Auto-refresh every 2 seconds
+    });
+
+    // Override updateAdminUI to also update dashboard
+    const originalUpdateAdminUI = window.updateAdminUI;
+    window.updateAdminUI = function(isSignedIn) {
+      originalUpdateAdminUI(isSignedIn);
+      updateDashboard();
+    };
+
+    // Initial load
+    loadScores();
+  </script>
+</body>
+</html>

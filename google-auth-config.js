@@ -1,116 +1,164 @@
-// Google Authentication & Sheets Configuration
+// Admin-Only Google Authentication & Sheets Configuration
 // Replace these with your own credentials from Google Cloud Console
 
 const GOOGLE_CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com';
 const GOOGLE_SHEETS_ID = 'YOUR_GOOGLE_SHEET_ID';
-const SPREADSHEET_RANGES = {
-  grade2: 'Grade2!A:F',
-  grade7: 'Grade7!A:F'
-};
 
 let googleAuth = null;
-let userEmail = null;
+let adminEmail = null;
 
-// Initialize Google API
+// Initialize Google API (ADMIN ONLY)
 function initGoogleAPI() {
   gapi.load('auth2', () => {
-    googleAuth = gapi.auth2.init({
+    gapi.auth2.init({
       client_id: GOOGLE_CLIENT_ID,
       scope: 'https://www.googleapis.com/auth/spreadsheets'
-    });
-    
-    // Check if already signed in
-    if (googleAuth.isSignedIn.get()) {
-      const profile = googleAuth.currentUser.get().getBasicProfile();
-      userEmail = profile.getEmail();
-      updateAuthUI(true);
-    } else {
-      updateAuthUI(false);
-    }
-
-    // Listen for auth changes
-    googleAuth.isSignedIn.listen(isSignedIn => {
-      if (isSignedIn) {
-        const profile = googleAuth.currentUser.get().getBasicProfile();
-        userEmail = profile.getEmail();
-        updateAuthUI(true);
+    }).then(() => {
+      const auth2 = gapi.auth2.getAuthInstance();
+      googleAuth = auth2;
+      
+      // Check if already signed in
+      if (auth2.isSignedIn.get()) {
+        const profile = auth2.currentUser.get().getBasicProfile();
+        adminEmail = profile.getEmail();
+        updateAdminUI(true);
       } else {
-        userEmail = null;
-        updateAuthUI(false);
+        updateAdminUI(false);
       }
+
+      // Listen for auth changes
+      auth2.isSignedIn.listen(isSignedIn => {
+        if (isSignedIn) {
+          const profile = auth2.currentUser.get().getBasicProfile();
+          adminEmail = profile.getEmail();
+          updateAdminUI(true);
+        } else {
+          adminEmail = null;
+          updateAdminUI(false);
+        }
+      });
+
+      // Also load the Sheets API
+      gapi.load('sheets', { 'version': 'v4' });
     });
   });
 }
 
-function signIn() {
+function adminSignIn() {
   if (googleAuth) {
     googleAuth.signIn().then(() => {
-      console.log('Signed in successfully');
-    }).catch(err => console.error('Sign-in error:', err));
+      console.log('Admin signed in successfully');
+    }).catch(err => console.error('Admin sign-in error:', err));
   }
 }
 
-function signOut() {
+function adminSignOut() {
   if (googleAuth) {
     googleAuth.signOut().then(() => {
-      console.log('Signed out');
+      console.log('Admin signed out');
     });
   }
 }
 
-function updateAuthUI(isSignedIn) {
-  const loginBtn = document.getElementById('googleLoginBtn');
-  const logoutBtn = document.getElementById('googleLogoutBtn');
-  const userDisplay = document.getElementById('userDisplay');
+function updateAdminUI(isSignedIn) {
+  const loginBtn = document.getElementById('adminLoginBtn');
+  const logoutBtn = document.getElementById('adminLogoutBtn');
+  const adminDisplay = document.getElementById('adminDisplay');
+  const syncBtn = document.getElementById('syncBtn');
 
-  if (isSignedIn && loginBtn) {
-    loginBtn.style.display = 'none';
+  if (isSignedIn) {
+    if (loginBtn) loginBtn.style.display = 'none';
     if (logoutBtn) logoutBtn.style.display = 'inline-block';
-    if (userDisplay) userDisplay.textContent = `Logged in as: ${userEmail}`;
-  } else if (loginBtn) {
-    loginBtn.style.display = 'inline-block';
+    if (syncBtn) syncBtn.style.display = 'inline-block';
+    if (adminDisplay) adminDisplay.textContent = `Logged in as: ${adminEmail}`;
+  } else {
+    if (loginBtn) loginBtn.style.display = 'inline-block';
     if (logoutBtn) logoutBtn.style.display = 'none';
-    if (userDisplay) userDisplay.textContent = '';
+    if (syncBtn) syncBtn.style.display = 'none';
+    if (adminDisplay) adminDisplay.textContent = '';
   }
 }
 
-// Save score to Google Sheets
-async function saveScoreToSheets(grade, sheetName, dataRow) {
-  if (!googleAuth || !googleAuth.isSignedIn.get()) {
-    console.warn('Not signed in. Scores will only be saved locally.');
+function isAdminLoggedIn() {
+  return googleAuth && googleAuth.isSignedIn.get();
+}
+
+// Sync all collected student scores to Google Sheets
+async function syncScoresToSheets() {
+  if (!isAdminLoggedIn()) {
+    alert('Please login as admin first');
     return false;
   }
 
   try {
-    const accessToken = googleAuth.currentUser.get().getAuthResponse().id_token;
-    
-    // Prepare data with timestamp
-    const timestamp = new Date().toISOString();
-    const rowData = {
-      values: [[
-        userEmail,
-        timestamp,
-        dataRow.grade || '',
-        dataRow.correct || 0,
-        dataRow.total || 0,
-        dataRow.percentage || '0%'
-      ]]
-    };
+    const allScores = JSON.parse(localStorage.getItem('allStudentScores')) || {};
+    if (Object.keys(allScores).length === 0) {
+      alert('No student scores to sync');
+      return false;
+    }
 
-    // Append to sheet
-    const response = await gapi.client.sheets.spreadsheets.values.append({
-      spreadsheetId: GOOGLE_SHEETS_ID,
-      range: `${sheetName}!A:F`,
-      valueInputOption: 'RAW',
-      resource: rowData
-    });
+    let syncedCount = 0;
 
-    console.log('Score saved to Google Sheets:', response);
+    for (const grade in allScores) {
+      const sheetName = grade === 'grade2' ? 'Grade2' : 'Grade7';
+      const studentScores = allScores[grade];
+
+      for (const studentName in studentScores) {
+        const scores = studentScores[studentName];
+        
+        for (const scoreRecord of scores) {
+          const rowData = {
+            values: [[
+              studentName,
+              scoreRecord.timestamp,
+              scoreRecord.sheetType,
+              scoreRecord.correct,
+              scoreRecord.total,
+              scoreRecord.percentage
+            ]]
+          };
+
+          await gapi.client.sheets.spreadsheets.values.append({
+            spreadsheetId: GOOGLE_SHEETS_ID,
+            range: `${sheetName}!A:F`,
+            valueInputOption: 'RAW',
+            resource: rowData
+          });
+
+          syncedCount++;
+        }
+      }
+    }
+
+    alert(`✅ Successfully synced ${syncedCount} scores to Google Sheets!`);
     return true;
   } catch (error) {
-    console.error('Error saving to Google Sheets:', error);
+    console.error('Error syncing to Google Sheets:', error);
+    alert('❌ Sync failed. Check console for details.');
     return false;
   }
+}
+
+// Local storage functions for students (no auth needed)
+function saveLocalScore(studentName, grade, sheetType, correct, total) {
+  const allScores = JSON.parse(localStorage.getItem('allStudentScores')) || { grade2: {}, grade7: {} };
+  const gradeKey = grade === 2 ? 'grade2' : 'grade7';
+  
+  if (!allScores[gradeKey][studentName]) {
+    allScores[gradeKey][studentName] = [];
+  }
+
+  const percentage = Math.round((correct / total) * 100);
+  allScores[gradeKey][studentName].push({
+    sheetType: sheetType,
+    correct: correct,
+    total: total,
+    percentage: percentage + '%',
+    timestamp: new Date().toISOString()
+  });
+
+  localStorage.setItem('allStudentScores', JSON.stringify(allScores));
+  console.log(`Score saved locally for ${studentName}`);
 }
 
 // Load Google API Script

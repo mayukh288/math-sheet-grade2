@@ -250,6 +250,11 @@
       <a class="back-link" href="./">&larr; Back to Home</a>
     </div>
 
+    <div style="background: rgba(255,255,255,0.9); padding: 12px 16px; border-radius: 10px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+      <label style="font-weight: 600; color: #0f4b82;">Your Name:</label>
+      <input type="text" id="studentName" placeholder="Enter your name" style="margin-left: 8px; padding: 6px 10px; border: 2px solid #bad6ff; border-radius: 6px; font-size: 0.95rem;" />
+    </div>
+
     <div id="hero">
       <h1>Grade 2 Multiplication Practice</h1>
     </div>
@@ -348,14 +353,9 @@
       }
       document.getElementById('score').innerText = `You got ${correct} out of ${problems.length} correct!`;
       updateStats('grade2', correct, problems.length);
-      // Save to Google Sheets
-      const percentage = Math.round((correct / problems.length) * 100);
-      saveScoreToSheets('grade2', 'Grade2', {
-        grade: 'Grade 2 - Multiplication',
-        correct: correct,
-        total: problems.length,
-        percentage: percentage + '%'
-      });
+      // Save score locally
+      const studentName = document.getElementById('studentName').value.trim() || 'Anonymous';
+      saveLocalScore(studentName, 2, 'Multiplication', correct, problems.length);
     }
 
     function regenerate() {

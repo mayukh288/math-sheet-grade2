@@ -418,14 +418,9 @@
       });
       document.getElementById('score').innerText = `You got ${correct} out of ${problems.length} correct.`;
       updateStats('grade2', correct, problems.length);
-      // Save to Google Sheets
-      const percentage = Math.round((correct / problems.length) * 100);
-      saveScoreToSheets('grade2', 'Grade2', {
-        grade: 'Grade 2 - Mixed Skills',
-        correct: correct,
-        total: problems.length,
-        percentage: percentage + '%'
-      });
+      // Save score locally
+      const studentName = document.getElementById('studentName').value.trim() || 'Anonymous';
+      saveLocalScore(studentName, 2, 'Mixed Skills', correct, problems.length);
     }
 
     function stripHtml(raw) {
