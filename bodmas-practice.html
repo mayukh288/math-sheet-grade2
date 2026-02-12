@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Grade 7 Exponents Practice</title>
+  <title>Grade 7 Order of Operations (BODMAS)</title>
   <style>
     body {
       font-family: 'Comic Sans MS', cursive;
@@ -90,13 +90,13 @@
     #worksheet {
       margin-top: 28px;
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
       gap: 18px;
       align-items: start;
     }
 
     .problem {
-      font-size: 1.4em;
+      font-size: 1.3em;
       padding: 16px 18px 18px;
       border-radius: 16px;
       background-color: rgba(234,242,255,0.95);
@@ -107,10 +107,7 @@
     .problem-text {
       margin-bottom: 12px;
       font-weight: 500;
-    }
-
-    .problem-text sup {
-      font-size: 0.85em;
+      word-break: break-word;
     }
 
     input {
@@ -208,7 +205,7 @@
         flex-direction: column;
       }
       .problem {
-        font-size: 1.3em;
+        font-size: 1.2em;
       }
     }
 
@@ -247,12 +244,12 @@
     </div>
 
     <div id="hero">
-      <h1>Grade 7 Exponents Practice</h1>
+      <h1>Order of Operations (BODMAS)</h1>
     </div>
 
     <div class="subnav">
-      <span>Try order of operations?</span>
-      <a href="bodmas-practice.html">Go to BODMAS →</a>
+      <span>Need exponents?</span>
+      <a href="exponents-practice.html">Go to Exponents →</a>
     </div>
 
     <div id="worksheet"></div>
@@ -287,29 +284,67 @@
     function generateProblems() {
       worksheet.innerHTML = '';
       problems.length = 0;
-      const totalProblems = 12;
+      const totalProblems = 8;
       const generated = new Set();
       let count = 0;
+      
       while (count < totalProblems) {
-        // Exponents: squares (2) and cubes (3), with positive and negative bases
-        const exponent = Math.random() > 0.5 ? 2 : 3;
-        let base = randomInt(2, 10);
-        // 50% chance of negative base
-        if (Math.random() > 0.5) base = -base;
-        const key = `${base}-${exponent}`;
+        const problemType = count % 4; // Cycles through 4 types
+        let problemString, answer;
+        
+        if (problemType === 0) {
+          // Parentheses + multiplication/division
+          const a = randomInt(-10, 10);
+          const b = randomInt(-10, 10);
+          const c = randomInt(-5, 5);
+          const op = Math.random() > 0.5 ? '*' : '/';
+          problemString = `(${a} + ${b}) ${op} ${c}`;
+          answer = op === '*' ? (a + b) * c : Math.round((a + b) / c);
+          
+        } else if (problemType === 1) {
+          // Exponent + addition/subtraction
+          const base = randomInt(2, 5);
+          const exp = randomInt(2, 3);
+          const a = randomInt(-10, 10);
+          const add = Math.random() > 0.5;
+          problemString = add ? `${base}^${exp} + ${a}` : `${base}^${exp} - ${a}`;
+          const expVal = Math.pow(base, exp);
+          answer = add ? expVal + a : expVal - a;
+          
+        } else if (problemType === 2) {
+          // Multiplication/division first, then addition/subtraction
+          const a = randomInt(-10, 10);
+          const b = randomInt(-5, 5);
+          const c = randomInt(-10, 10);
+          const mul = Math.random() > 0.5 ? '*' : '/';
+          const add = Math.random() > 0.5 ? '+' : '-';
+          problemString = `${a} ${mul} ${b} ${add} ${c}`;
+          const mulResult = mul === '*' ? a * b : Math.round(a / b);
+          answer = add === '+' ? mulResult + c : mulResult - c;
+          
+        } else {
+          // Parentheses with multiplication/division inside
+          const a = randomInt(-8, 8);
+          const b = randomInt(2, 5);
+          const c = randomInt(2, 5);
+          const op = Math.random() > 0.5 ? '*' : '/';
+          problemString = `(${a} ${op} ${b}) + ${c}`;
+          const insideResult = op === '*' ? a * b : Math.round(a / b);
+          answer = insideResult + c;
+        }
+        
+        const key = problemString;
         if (generated.has(key)) continue;
         generated.add(key);
-        const answer = Math.pow(base, exponent);
-        problems.push({ base, exponent, answer });
+        
+        problems.push({ problemString, answer });
         count++;
 
         const div = document.createElement('div');
         div.className = 'problem';
         const idx = problems.length - 1;
-        const baseDisplay = base < 0 ? `(${base})` : base;
-        const expDisplay = exponent === 2 ? `${baseDisplay}<sup>2</sup>` : `${baseDisplay}<sup>3</sup>`;
         div.innerHTML = `
-          <div class='problem-text'>Solve: ${expDisplay}</div>
+          <div class='problem-text'>Solve: ${problemString}</div>
           <input type="number" id="ans${idx}" placeholder="Answer" />`;
         worksheet.appendChild(div);
       }
