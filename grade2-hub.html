@@ -144,6 +144,48 @@
     footer a {
       color: inherit;
     }
+
+    .stats-box {
+      margin: 24px auto;
+      max-width: 600px;
+      background: rgba(255,255,255,0.92);
+      border-radius: 16px;
+      padding: 18px 24px;
+      box-shadow: 0 10px 30px rgba(15,58,99,0.1);
+      border: 2px solid #e8f0ff;
+    }
+
+    .stats-box h3 {
+      margin: 0 0 12px;
+      color: #0d4b83;
+      font-size: 1.1rem;
+    }
+
+    .stats-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      color: #345975;
+      font-weight: 500;
+    }
+
+    .reset-btn {
+      background: #ff6b6b;
+      color: #fff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-weight: 600;
+      margin-top: 12px;
+      box-shadow: 0 4px 12px rgba(255,107,107,0.3);
+      transition: transform 0.2s;
+    }
+
+    .reset-btn:hover {
+      transform: translateY(-2px);
+    }
   </style>
 </head>
 <body>
@@ -154,10 +196,23 @@
     <p class="tagline">Pick a worksheet, print it, or practice right on the screen. Each set reshuffles every time for endless practice.</p>
   </header>
 
+  <div class="stats-box" id="statsContainer">
+    <h3>📊 Your Progress This Session</h3>
+    <div class="stats-row">
+      <span>Total Problems Attempted:</span>
+      <strong id="totalAttempted">0</strong>
+    </div>
+    <div class="stats-row">
+      <span>Total Correct:</span>
+      <strong id="totalCorrect">0</strong>
+    </div>
+    <button class="reset-btn" onclick="resetStats()">Reset Stats</button>
+  </div>
+
   <section class="grid">
     <article class="card">
       <h2>Stacked Addition &amp; Subtraction</h2>
-      <p>Ten two-digit problems with instant feedback, confetti, and a quick "new sheet" button.</p>
+      <p>Twelve two-digit problems with instant feedback, confetti, and a quick "new sheet" button.</p>
       <ul class="features">
         <li>Balanced +/- mix with no negative results</li>
         <li>Kid-friendly stacked layout great for printouts</li>
@@ -196,5 +251,24 @@
   <footer>
     Built with ❤️ for quick at-home math warmups.
   </footer>
+
+  <script>
+    function loadStats() {
+      const stats = JSON.parse(localStorage.getItem('mathStats')) || { grade2: {total: 0, correct: 0}, grade7: {total: 0, correct: 0} };
+      document.getElementById('totalAttempted').textContent = stats.grade2.total || 0;
+      document.getElementById('totalCorrect').textContent = stats.grade2.correct || 0;
+    }
+
+    function resetStats() {
+      if (confirm('Are you sure you want to reset all Grade 2 stats?')) {
+        const stats = JSON.parse(localStorage.getItem('mathStats')) || { grade2: {total: 0, correct: 0}, grade7: {total: 0, correct: 0} };
+        stats.grade2 = {total: 0, correct: 0};
+        localStorage.setItem('mathStats', JSON.stringify(stats));
+        loadStats();
+      }
+    }
+
+    loadStats();
+  </script>
 </body>
 </html>

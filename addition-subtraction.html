@@ -322,6 +322,14 @@
       }
     }
 
+    function updateStats(grade, correct, total) {
+      const stats = JSON.parse(localStorage.getItem('mathStats')) || { grade2: {total: 0, correct: 0}, grade7: {total: 0, correct: 0} };
+      if (!stats[grade]) stats[grade] = {total: 0, correct: 0};
+      stats[grade].total += total;
+      stats[grade].correct += correct;
+      localStorage.setItem('mathStats', JSON.stringify(stats));
+    }
+
     function checkAnswers() {
       let correct = 0;
       for (let i = 0; i < problems.length; i++) {
@@ -338,6 +346,7 @@
         }
       }
       document.getElementById('score').innerText = `You got ${correct} out of ${problems.length} correct!`;
+      updateStats('grade2', correct, problems.length);
     }
 
     function regenerate() {
