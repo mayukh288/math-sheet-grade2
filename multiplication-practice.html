@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Grade 2 Multiplication Practice</title>
+  <script src="google-auth-config.js"></script>
   <style>
     body {
       font-family: 'Comic Sans MS', cursive;
@@ -347,6 +348,14 @@
       }
       document.getElementById('score').innerText = `You got ${correct} out of ${problems.length} correct!`;
       updateStats('grade2', correct, problems.length);
+      // Save to Google Sheets
+      const percentage = Math.round((correct / problems.length) * 100);
+      saveScoreToSheets('grade2', 'Grade2', {
+        grade: 'Grade 2 - Multiplication',
+        correct: correct,
+        total: problems.length,
+        percentage: percentage + '%'
+      });
     }
 
     function regenerate() {

@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Grade 7 Order of Operations (BODMAS)</title>
+  <script src="google-auth-config.js"></script>
   <style>
     body {
       font-family: 'Comic Sans MS', cursive;
@@ -389,6 +390,14 @@
       }
       document.getElementById('score').innerText = `You got ${correct} out of ${problems.length} correct!`;
       updateStats('grade7', correct, problems.length);
+      // Save to Google Sheets
+      const percentage = Math.round((correct / problems.length) * 100);
+      saveScoreToSheets('grade7', 'Grade7', {
+        grade: 'Grade 7 - BODMAS',
+        correct: correct,
+        total: problems.length,
+        percentage: percentage + '%'
+      });
     }
 
     function regenerate() {
