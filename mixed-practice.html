@@ -209,10 +209,20 @@
     }
 
     function buildSkipCounting() {
-      const start = randInt(5, 40);
-      const step = [2, 5, 10][randInt(0,2)];
-      const sequence = Array.from({ length: 5 }, (_, i) => start + step * i);
-      const blankIndex = randInt(1, 3);
+      const generated = window.generatedProblems = window.generatedProblems || new Set();
+      let problem;
+      do {
+        const start = randInt(5, 40);
+        const step = [2, 5, 10][randInt(0,2)];
+        const sequence = Array.from({ length: 5 }, (_, i) => start + step * i);
+        const blankIndex = randInt(1, 3);
+        const answer = sequence[blankIndex];
+        problem = `skip-${start}-${step}-${blankIndex}`;
+      } while (generated.has(problem));
+      generated.add(problem);
+      
+      const sequence = Array.from({ length: 5 }, (_, i) => (parseInt(problem.split('-')[1]) + parseInt(problem.split('-')[2]) * i));
+      const blankIndex = parseInt(problem.split('-')[3]);
       const answer = sequence[blankIndex];
       sequence[blankIndex] = '___';
       const prompt = `Fill in the missing number: ${sequence.join(', ')}`;
@@ -220,16 +230,35 @@
     }
 
     function buildPlaceValue() {
-      const tens = randInt(2, 9);
-      const ones = randInt(0, 9);
+      const generated = window.generatedProblems = window.generatedProblems || new Set();
+      let problem;
+      do {
+        const tens = randInt(2, 9);
+        const ones = randInt(0, 9);
+        problem = `pv-${tens}-${ones}`;
+      } while (generated.has(problem));
+      generated.add(problem);
+      
+      const tens = parseInt(problem.split('-')[1]);
+      const ones = parseInt(problem.split('-')[2]);
       const answer = tens * 10 + ones;
       const prompt = `Make the number with ${tens} tens and ${ones} ones.`;
       addProblem('Place Value Builder', `Make the number with <strong>${tens}</strong> tens and <strong>${ones}</strong> ones.`, 'input', String(answer), prompt);
     }
 
     function buildComparison() {
-      const a = randInt(12, 98);
-      const b = randInt(12, 98);
+      const generated = window.generatedProblems = window.generatedProblems || new Set();
+      let problem;
+      do {
+        const a = randInt(12, 98);
+        const b = randInt(12, 98);
+        problem = `cmp-${Math.min(a,b)}-${Math.max(a,b)}`;
+      } while (generated.has(problem));
+      generated.add(problem);
+      
+      const nums = problem.split('-');
+      const a = parseInt(nums[1]);
+      const b = parseInt(nums[2]);
       let answer = '=';
       if (a > b) answer = '>';
       else if (a < b) answer = '<';
@@ -238,10 +267,22 @@
     }
 
     function buildWordProblem() {
-      const apples = randInt(4, 15);
-      const oranges = randInt(3, 12);
-      const take = randInt(1, apples - 1);
-      const type = Math.random() > 0.5 ? 'add' : 'sub';
+      const generated = window.generatedProblems = window.generatedProblems || new Set();
+      let problem;
+      do {
+        const apples = randInt(4, 15);
+        const oranges = randInt(3, 12);
+        const take = randInt(1, apples - 1);
+        const type = Math.random() > 0.5 ? 'add' : 'sub';
+        problem = `wp-${type}-${apples}-${oranges}-${take}`;
+      } while (generated.has(problem));
+      generated.add(problem);
+      
+      const parts = problem.split('-');
+      const type = parts[1];
+      const apples = parseInt(parts[2]);
+      const oranges = parseInt(parts[3]);
+      const take = parseInt(parts[4]);
       let text, answer;
       if (type === 'add') {
         text = `Maya has ${apples} stickers and gets ${oranges} more. How many stickers now?`;
@@ -338,6 +379,7 @@
 
     function generateProblems() {
       reset();
+      window.generatedProblems = new Set();
       buildSkipCounting();
       buildPlaceValue();
       buildComparison();
